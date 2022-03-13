@@ -130,7 +130,25 @@ Datapod:()=>{
         return ()=>clearInterval(i);
     });
     if (data !== null) {return (marker ? (data.map((x=>
-        <Marker icon={IconLib.datapod} position={[x.lat,x.lng]}>
+        <Marker 
+            icon={()=>{setInterval(()=>{
+                if(window.localStorage_Checked.datapods[x.string] === 1){return IconLib.datapodChecked}else{return IconLib.datapod}
+            })}
+            }
+            position={[x.lat,x.lng]} 
+            eventHandlers={function(){
+                this.addEventListener("contextmenu", function(e){
+                    e.preventDefault();
+                    if(window.localStorage_Checked.datapods[x.string] === 1){
+                        window.localStorage_Checked.datapods[x.string] = 0
+                        localStorage.setItem("checked",JSON.stringify(window.localStorage_Checked))
+                    } else {
+                        window.localStorage_Checked.datapods[x.string] = 1
+                        localStorage.setItem("checked",JSON.stringify(window.localStorage_Checked))
+                    };
+                })
+            }}
+        >
             <Tooltip direction='top'><tooltip-window>
                 <header>
                      <span><menuicon/> {t("items:other.datapod.title")}</span>
@@ -168,6 +186,37 @@ BGM:()=>{
             </tooltip-window></Tooltip>
         </Marker>
     ))):<Fragment/>)}else{return <Fragment/>}
+},
+Mischief:()=>{
+    const {t} = useTranslation();
+    const [data,setData] = useState([]);
+    const [marker,setMarker] = useState([]);
+    useEffect(()=>{fetch("./api/read.php?table=other__mischief").then(response=>response.json()).then(d=>setData(d))},[]);
+    useEffect(()=>{
+        var i = setInterval(()=>setMarker(window.localStorage_Settings.other.mischief));
+        return ()=>clearInterval(i);
+    });
+    if (data !== null) {return (marker ? (data.map((x=>
+        <Circle 
+            center={[x.lat,x.lng]}
+            radius={4}
+            pathOptions={{
+                color: 'lightblue',
+                fillColor: 'lightblue',
+                fillOpacity: '1'
+            }}
+        >
+            <Tooltip direction='top'><tooltip-window>
+                <header>
+                    <span><menuicon/> {t("items:other.mischief.title")}</span>
+                </header>
+                <content>
+                    {t("ui:Map.placedBy")}: {x.contributer}
+                    <id>ID: mischief{x.id}</id>
+                </content>
+            </tooltip-window></Tooltip>
+        </Circle>
+    ))):<Fragment/>)}else{return <Fragment/>}
 }
 }
 export default function Other(){return (<>
@@ -177,4 +226,5 @@ export default function Other(){return (<>
 <Load.StellarGrace/>
 <Load.Datapod/>
 <Load.BGM/>
+<Load.Mischief/>
 </>)};
